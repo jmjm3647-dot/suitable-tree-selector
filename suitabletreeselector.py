@@ -4,6 +4,18 @@ import random
 import serial
 
 
+#compares list of temp and reported temp
+#Takes lowest diffrence and records index
+def closest_temp(Avg_temp, temp):
+    temp_diffs = (temp - Avg_temp).abs()
+    #print(temp_diffs)
+    min_diff = temp_diffs.min()
+    return temp_diffs[temp_diffs == min_diff].index
+
+def closest_moisture(pref, soilmoisture):
+    diffs = (soilmoisture - pref).abs()
+    min_diff = diffs.min()
+    return diffs[diffs == min_diff].index
 
 def treeselector():
 #reads csv files
@@ -33,24 +45,13 @@ def treeselector():
 
 
 #temp = df['Avg_Yearly_Temp_C']
-#compares list of temp and reported temp
-#Takes lowest diffrence and records index
-    def closest_temp(Avg_temp, temp):
-        temp_diffs = (temp - Avg_temp).abs()
-        #print(temp_diffs)
-        min_diff = temp_diffs.min()
-        return temp_diffs[temp_diffs == min_diff].index
+
 #Takes index from function and compares it to column 'trees' to select the tree best suited
     trees = df['Tree_Species']
     treetemppref = [trees[i] for i in closest_temp(Avg_temp,temp)]
     print('Tree(s) suited to the temperature are:')
     print(treetemppref)
 
-
-    def closest_moisture(pref, soilmoisture):
-        diffs = (soilmoisture - pref).abs()
-        min_diff = diffs.min()
-        return diffs[diffs == min_diff].index
     trees = df['Tree_Species']
     treepref = [trees[i] for i in closest_moisture(moisturepref,soilmoisture)]
     print('Tree(s) suited to the soil are:')
@@ -66,7 +67,7 @@ def treeselector():
 
     carbonabsorbsion = df['Average_CO2_Absorption_kg_per_year']
     suitabletrees = [carbonabsorbsion[i] for i in closest_moisture(moisturepref,soilmoisture)]
-    mostcarbon = max(suitabletrees)
+    mostcarbon_soil = max(suitabletrees)
     #findindex = suitabletrees.index(mostcarbon)
     indices = closest_moisture(moisturepref, soilmoisture)
     #print(indices)
@@ -74,7 +75,7 @@ def treeselector():
  
  
     print(trees[findindex_temp],'is the tree best suited to the temperature, with its average carbon absorbsion of',mostcarbon_temp,'kg per year')
-    print('However based on your soil',trees[findindex],'would be a good pick, due to its average carbon absorption of',mostcarbon,'kg per year')
+    print('However based on your soil moisture',trees[findindex],'would be a good pick due to its average carbon absorption of',mostcarbon_soil,'kg per year')
 
 
 #finds the second optimal factor of the best trees
@@ -88,7 +89,7 @@ def treeselector():
 #compares two best trees shown previously and selects tree with higher carbon absorbsion
 #Based on the tree selected it will look at the other value and look at what it needs to meet its optimal condition
 #Gives advice on how to change enviromental conditions
-    if mostcarbon_temp > mostcarbon:
+    if mostcarbon_temp >= mostcarbon_soil:
         print(trees[findindex_temp], "should be planted")
         if soilmoisture < moistureoftree:
             print("Irrigation is advised to reach optimum soil moisture for", trees[findindex_temp])
@@ -96,7 +97,7 @@ def treeselector():
             print("Optimal conditions achieved")
         else:
             print("Less watering required")
-    elif mostcarbon_temp < mostcarbon:
+    elif mostcarbon_temp < mostcarbon_soil:
         print(trees[findindex],"should be planted")
         if temp > suitedtemp:
             print("Tree should be planted with cover decreasing temperature")
@@ -110,5 +111,4 @@ def treeselector():
 
 
 treeselector()
-
 
